@@ -2,15 +2,27 @@ mod settings;
 
 use image::error::ImageResult;
 use image::{DynamicImage, Rgba, RgbaImage};
-use log::{debug, info};
+use log::info;
 use settings::SettingData;
 use std::env;
+use std::path::Path;
 
 fn main() {
-    let setting_data = SettingData::load("./settings.toml");
-
     env::set_var("RUST_LOG", "debug");
     env_logger::init();
+
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        panic!("argument is missing");
+    }
+
+    let setting_file_path = Path::new(&args[1]);
+    let setting_file_extension = setting_file_path.extension().unwrap();
+    if setting_file_extension != "toml" {
+        panic!("illegal argument: {}", setting_file_path.to_str().unwrap());
+    }
+
+    let setting_data = SettingData::load(setting_file_path.to_str().unwrap());
 
     for file in setting_data.get_files() {
         let file_name = file.0;
